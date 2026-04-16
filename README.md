@@ -187,9 +187,3 @@ Checklist rápido antes de publicar:
 - Padronizar caminhos de imagens (algumas páginas usam `../imgs/...` e outras `imgs/...`)
 - Adicionar versionamento de conteúdo dos avisos
 - Incluir pipeline simples de deploy automático
-
----
-
-## Responsabilidade do conteúdo
-
-As informações pastorais, horários e avisos devem ser validadas pela equipe da paróquia antes de cada atualização em produção.
