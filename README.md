@@ -50,7 +50,6 @@ Principais características:
 ├── tailwind.config.js
 ├── vercel.json
 ├── package.json
-├── ADMIN_SETUP.md
 ├── api/
 │   ├── avisos.js
 │   ├── _lib/
@@ -169,132 +168,67 @@ Contém estilos e animações complementares:
 
 ---
 
-## Como executar localmente
+## Arquitetura de avisos
 
-Como o projeto usa `fetch` para carregar componentes (`components/header.html` e `components/footer.html`) e APIs em `api/`, abra com servidor HTTP local (não use arquivo direto `file://`).
+Os avisos paroquiais deixaram de ser conteúdo fixo no HTML e passaram a ser dados persistidos no Turso DB.
 
-### Opção 1 — Vercel Dev com APIs
+Fluxo público:
 
-Instale as dependências:
+- `avisos.html` carrega `avisos.js`
+- `avisos.js` chama `GET /api/avisos`
+- `api/avisos.js` consulta apenas avisos ativos no Turso
+- A página renderiza os cards e a data da última atualização no navegador
 
-```bash
-npm install
-```
+Fluxo administrativo:
 
-Crie um `.env.local` com as variáveis abaixo e rode:
+- `admin.html` carrega `admin.js`
+- `admin.js` consulta `GET /api/admin/session`
+- Sem sessão válida, a interface exibe a tela de login
+- Com sessão válida, a interface lista os avisos atuais
+- Criação, edição e exclusão passam por `api/admin/avisos.js`
 
-```bash
-npm run dev
-```
-
-Variáveis necessárias:
-
-```env
-TURSO_DATABASE_URL=libsql://...
-TURSO_AUTH_TOKEN=...
-ADMIN_PASSWORD=...
-ADMIN_SESSION_SECRET=...
-ADMIN_SESSION_DAYS=90
-```
-
-Acesse:
-
-- http://localhost:3000
-- http://localhost:3000/admin
-
-Essa é a opção recomendada, pois executa as Vercel Functions e respeita as URLs limpas configuradas em `vercel.json`.
-
-### Opção 2 — Python ou Live Server
-
-Use apenas para prévia visual das páginas estáticas, sem APIs e sem simular as URLs limpas da Vercel.
-
-No diretório do projeto:
-
-```bash
-python -m http.server 5500
-```
-
-Acesse os arquivos diretamente quando necessário:
-
-- http://localhost:5500/index.html
-- http://localhost:5500/avisos.html
-
-No VS Code, também é possível usar a extensão **Live Server** abrindo `index.html`.
+As rotas administrativas exigem sessão válida. O endpoint público não exige autenticação.
 
 ---
 
-## Conteúdo e manutenção
+## Autenticação administrativa
 
-### Atualizar avisos
+O login administrativo usa senha única e sessão persistente por cookie HTTP-only assinado.
 
-Página: `/admin`
+Componentes principais:
 
-O administrador deve acessar o painel, fazer login e usar as ações disponíveis:
+- `api/admin/login.js` valida a senha administrativa
+- `api/_lib/auth.js` cria e verifica o cookie `admin_session`
+- `api/admin/session.js` informa se a sessão atual é válida
+- `api/admin/logout.js` limpa a sessão
+- `admin.js` alterna entre tela de login e painel conforme o estado da sessão
 
-- Criar novo aviso
-- Editar aviso existente
-- Excluir aviso
-
-Cada aviso usa apenas:
-
-- Título
-- Descrição
-
-Os dados são salvos no Turso DB e exibidos automaticamente em `/avisos`.
-
-Consulte `ADMIN_SETUP.md` para detalhes de configuração do banco, variáveis de ambiente e sessão administrativa.
-
-### Atualizar horários/comunidades
-
-Arquivo: `celebracoes.html`
-
-- Ajuste textos de dias/horários
-- Atualize endereços por comunidade
-
-### Atualizar dados de contato e redes
-
-Arquivos:
-
-- `components/footer.html`
-- `contatos.html`
-
-### Atualizar chave PIX ou QR Code
-
-Arquivos:
-
-- `index.html`
-- `doacao.html`
-- imagem em `imgs/qr-code.jpg`
+O cookie é assinado com um segredo de servidor, tem `HttpOnly`, `SameSite=Lax` e usa `Secure` em ambiente de produção.
 
 ---
 
-## Publicação (produção)
+## Persistência
 
-O site está em produção em https://paroquiasantateresinha.com.
+O Turso DB armazena os avisos na tabela `avisos`, criada automaticamente pelas APIs quando necessário.
 
-O deploy principal é feito na Vercel. O projeto depende de Vercel Functions e Turso DB para o painel administrativo e para a página dinâmica de avisos.
+Campos principais:
 
-Variáveis de ambiente exigidas na Vercel:
+- `id`
+- `titulo`
+- `descricao`
+- `ativo`
+- `criado_em`
+- `atualizado_em`
 
-```env
-TURSO_DATABASE_URL=libsql://...
-TURSO_AUTH_TOKEN=...
-ADMIN_PASSWORD=...
-ADMIN_SESSION_SECRET=...
-ADMIN_SESSION_DAYS=90
-```
+A página pública usa apenas avisos ativos. O painel administrativo trabalha com a lista completa e permite remover registros.
 
-Depois de configurar ou alterar variáveis de ambiente, faça um redeploy do projeto na Vercel.
+---
 
-Checklist rápido antes de publicar:
+## Deploy
 
-- Validar links internos de navegação
-- Confirmar carregamento do `header` e `footer`
-- Testar menu mobile
-- Testar modal PIX
-- Verificar caminhos das imagens
-- Testar login em `/admin`
-- Criar um aviso de teste e confirmar exibição em `/avisos`
+O deploy principal é feito na Vercel. O projeto combina páginas HTML estáticas, arquivos JS/CSS públicos e funções serverless em `api/`.
+
+As variáveis sensíveis ficam no ambiente da Vercel e não são expostas ao navegador. O navegador conversa com as APIs internas do projeto, e as APIs fazem a comunicação com o Turso.
 
 ---
 
