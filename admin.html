@@ -44,11 +44,22 @@
             <button
               id="toggle-password-button"
               type="button"
-              class="shrink-0 rounded-r-md border-l border-stone-200 px-4 py-3 text-sm font-bold text-red-950 transition hover:bg-stone-100"
+              class="flex shrink-0 items-center justify-center rounded-r-md border-l border-stone-200 px-4 py-3 text-red-950 transition hover:bg-stone-100"
               aria-label="Mostrar senha"
               aria-pressed="false"
             >
-              Mostrar
+              <svg id="password-eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2.06 12.35a11.24 11.24 0 0 1 19.88 0"></path>
+                <path d="M21.94 11.65a11.24 11.24 0 0 1-19.88 0"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg id="password-eye-off-icon" xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                <path d="M6.61 6.61C3.98 8.39 2 12 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                <path d="M14.12 14.12A3 3 0 0 1 9.88 9.88"></path>
+                <path d="M9.88 9.88 3 3"></path>
+                <path d="m21 21-6.88-6.88"></path>
+              </svg>
             </button>
           </div>
 

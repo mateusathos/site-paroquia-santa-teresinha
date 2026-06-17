@@ -12,6 +12,8 @@ const elements = {
   loginError: document.getElementById("login-error"),
   password: document.getElementById("admin-password"),
   togglePasswordButton: document.getElementById("toggle-password-button"),
+  passwordEyeIcon: document.getElementById("password-eye-icon"),
+  passwordEyeOffIcon: document.getElementById("password-eye-off-icon"),
   newAvisoButton: document.getElementById("new-aviso-button"),
   logoutButton: document.getElementById("logout-button"),
   adminCount: document.getElementById("admin-count"),
@@ -237,7 +239,8 @@ elements.togglePasswordButton.addEventListener("click", () => {
   const shouldShowPassword = elements.password.type === "password";
 
   elements.password.type = shouldShowPassword ? "text" : "password";
-  elements.togglePasswordButton.textContent = shouldShowPassword ? "Ocultar" : "Mostrar";
+  elements.passwordEyeIcon.classList.toggle("hidden", shouldShowPassword);
+  elements.passwordEyeOffIcon.classList.toggle("hidden", !shouldShowPassword);
   elements.togglePasswordButton.setAttribute("aria-label", shouldShowPassword ? "Ocultar senha" : "Mostrar senha");
   elements.togglePasswordButton.setAttribute("aria-pressed", String(shouldShowPassword));
   elements.password.focus();
