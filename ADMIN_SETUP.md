@@ -43,7 +43,7 @@ VALUES (
 
 ## Acessos
 
-- Pagina publica: `/avisos.html`
-- Painel administrativo: `/admin.html`
+- Pagina publica: `/avisos`
+- Painel administrativo: `/admin`
 
 O login cria um cookie HTTP-only assinado. Para encerrar a sessao, use o botao `Sair`. Para invalidar todas as sessoes antigas, troque o valor de `ADMIN_SESSION_SECRET` na Vercel.

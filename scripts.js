@@ -8,12 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
         headerContainer.innerHTML = data;
 
         // === Destacar página ativa ===
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const path = window.location.pathname.replace(/\/$/, '');
+        const currentPage = (path.split('/').pop() || '').replace(/\.html$/, '');
         const menuLinks = document.querySelectorAll('header a[href]');
-        
+
         menuLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href === currentPage || (currentPage === '' && href === 'index.html')) {
+          const href = link.getAttribute('href').replace(/^\//, '').replace(/\/$/, '').replace(/\.html$/, '');
+          if (href === currentPage || (currentPage === '' && href === '')) {
             link.classList.add('active');
           }
         });
