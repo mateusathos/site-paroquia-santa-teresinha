@@ -4,13 +4,15 @@ Site institucional da **Paróquia Santa Teresinha**, publicado em:
 
 - https://paroquiasantateresinha.com
 
-O projeto é um site estático em HTML/CSS/JavaScript, com foco em divulgação pastoral, horários de celebrações, avisos, informações sacramentais, contatos e doações.
+O projeto é um site em HTML/CSS/JavaScript hospedado na Vercel, com foco em divulgação pastoral, horários de celebrações, avisos, informações sacramentais, contatos e doações.
+
+Além das páginas públicas, o projeto possui um painel administrativo para gerenciar avisos paroquiais usando Turso DB e Vercel Functions.
 
 ---
 
 ## Visão geral
 
-Este repositório contém o frontend completo do site da paróquia, com navegação responsiva e carregamento dinâmico de componentes comuns (cabeçalho e rodapé).
+Este repositório contém o site da paróquia, com navegação responsiva, carregamento dinâmico de componentes comuns (cabeçalho e rodapé), painel administrativo e APIs serverless para avisos paroquiais.
 
 Principais características:
 
@@ -21,6 +23,9 @@ Principais características:
 - Destaque automático da página ativa no menu
 - Efeitos visuais (fade, hover, animações de entrada)
 - Modal de doação via PIX (na home e na página de doação)
+- URLs limpas na Vercel, como `/avisos`, `/admin` e `/celebracoes`
+- Painel administrativo com login e sessão persistente
+- CRUD de avisos paroquiais com Turso DB
 
 ---
 
@@ -29,8 +34,11 @@ Principais características:
 ```text
 .
 ├── index.html
+├── admin.html
+├── admin.js
 ├── celebracoes.html
 ├── avisos.html
+├── avisos.js
 ├── confissao.html
 ├── batismo.html
 ├── crisma.html
@@ -40,6 +48,20 @@ Principais características:
 ├── scripts.js
 ├── styles.css
 ├── tailwind.config.js
+├── vercel.json
+├── package.json
+├── ADMIN_SETUP.md
+├── api/
+│   ├── avisos.js
+│   ├── _lib/
+│   │   ├── auth.js
+│   │   ├── db.js
+│   │   └── http.js
+│   └── admin/
+│       ├── avisos.js
+│       ├── login.js
+│       ├── logout.js
+│       └── session.js
 ├── components/
 │   ├── header.html
 │   └── footer.html
@@ -49,15 +71,16 @@ Principais características:
 
 ### Páginas
 
-- `index.html` — página inicial com destaque de celebrações, avisos e botão de doação
-- `celebracoes.html` — horários e endereços das comunidades
-- `avisos.html` — avisos paroquiais e data da última atualização
-- `confissao.html` — explicação e orientações sobre confissão
-- `batismo.html` — conteúdo e contato para preparação do batismo
-- `crisma.html` — conteúdo e contato para preparação da crisma
-- `teresinha.html` — biografia e espiritualidade de Santa Teresinha
-- `doacao.html` — chamada para contribuição com modal PIX
-- `contatos.html` — canais da secretaria, endereço e redes sociais
+- `/` (`index.html`) — página inicial com destaque de celebrações, avisos e botão de doação
+- `/admin` (`admin.html`) — painel administrativo para gerenciar avisos
+- `/avisos` (`avisos.html`) — avisos paroquiais carregados pela API
+- `/celebracoes` (`celebracoes.html`) — horários e endereços das comunidades
+- `/confissao` (`confissao.html`) — explicação e orientações sobre confissão
+- `/batismo` (`batismo.html`) — conteúdo e contato para preparação do batismo
+- `/crisma` (`crisma.html`) — conteúdo e contato para preparação da crisma
+- `/teresinha` (`teresinha.html`) — biografia e espiritualidade de Santa Teresinha
+- `/doacao` (`doacao.html`) — chamada para contribuição com modal PIX
+- `/contatos` (`contatos.html`) — canais da secretaria, endereço e redes sociais
 
 ---
 
@@ -68,8 +91,25 @@ Principais características:
 - **JavaScript (ES6+)** (`scripts.js`)
 - **Tailwind CSS** via CDN
 - **Google Fonts**
+- **Vercel Functions** em `api/`
+- **Turso DB** via `@libsql/client`
 
 > Observação: embora exista um `tailwind.config.js`, o projeto utiliza Tailwind por CDN nos arquivos HTML.
+
+---
+
+## URLs limpas
+
+O arquivo `vercel.json` habilita URLs sem `.html`:
+
+```json
+{
+  "cleanUrls": true,
+  "trailingSlash": false
+}
+```
+
+Com isso, as rotas devem ser acessadas como `/avisos`, `/admin`, `/celebracoes`, etc. Essa configuração é aplicada pela Vercel e pelo `vercel dev`.
 
 ---
 
@@ -97,6 +137,26 @@ Responsável por comportamentos globais:
 - Alternar imagens da home em intervalo automático
 - Aplicar animações com `IntersectionObserver`
 
+### `avisos.js`
+
+Responsável pela página pública de avisos:
+
+- Buscar avisos ativos em `/api/avisos`
+- Renderizar os cards dinamicamente
+- Exibir data da última atualização
+- Mostrar estado vazio ou mensagem de erro quando necessário
+
+### `admin.js`
+
+Responsável pelo painel administrativo:
+
+- Verificar sessão do administrador
+- Exibir tela de login quando não houver sessão válida
+- Mostrar/ocultar senha com botão de ícone de olho
+- Listar avisos atuais
+- Criar, editar e excluir avisos
+- Encerrar sessão com o botão `Sair`
+
 ### `styles.css`
 
 Contém estilos e animações complementares:
@@ -111,9 +171,42 @@ Contém estilos e animações complementares:
 
 ## Como executar localmente
 
-Como o projeto usa `fetch` para carregar componentes (`components/header.html` e `components/footer.html`), abra com servidor HTTP local (não use arquivo direto `file://`).
+Como o projeto usa `fetch` para carregar componentes (`components/header.html` e `components/footer.html`) e APIs em `api/`, abra com servidor HTTP local (não use arquivo direto `file://`).
 
-### Opção 1 — Python
+### Opção 1 — Vercel Dev com APIs
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Crie um `.env.local` com as variáveis abaixo e rode:
+
+```bash
+npm run dev
+```
+
+Variáveis necessárias:
+
+```env
+TURSO_DATABASE_URL=libsql://...
+TURSO_AUTH_TOKEN=...
+ADMIN_PASSWORD=...
+ADMIN_SESSION_SECRET=...
+ADMIN_SESSION_DAYS=90
+```
+
+Acesse:
+
+- http://localhost:3000
+- http://localhost:3000/admin
+
+Essa é a opção recomendada, pois executa as Vercel Functions e respeita as URLs limpas configuradas em `vercel.json`.
+
+### Opção 2 — Python ou Live Server
+
+Use apenas para prévia visual das páginas estáticas, sem APIs e sem simular as URLs limpas da Vercel.
 
 No diretório do projeto:
 
@@ -121,14 +214,12 @@ No diretório do projeto:
 python -m http.server 5500
 ```
 
-Acesse:
+Acesse os arquivos diretamente quando necessário:
 
-- http://localhost:5500
+- http://localhost:5500/index.html
+- http://localhost:5500/avisos.html
 
-### Opção 2 — VS Code Live Server
-
-- Instale a extensão **Live Server**
-- Clique com botão direito em `index.html` e selecione **Open with Live Server**
+No VS Code, também é possível usar a extensão **Live Server** abrindo `index.html`.
 
 ---
 
@@ -136,10 +227,22 @@ Acesse:
 
 ### Atualizar avisos
 
-Arquivo: `avisos.html`
+Página: `/admin`
 
-- Atualize o bloco `Última Atualização`
-- Edite/adicione cards dentro da seção `#avisos`
+O administrador deve acessar o painel, fazer login e usar as ações disponíveis:
+
+- Criar novo aviso
+- Editar aviso existente
+- Excluir aviso
+
+Cada aviso usa apenas:
+
+- Título
+- Descrição
+
+Os dados são salvos no Turso DB e exibidos automaticamente em `/avisos`.
+
+Consulte `ADMIN_SETUP.md` para detalhes de configuração do banco, variáveis de ambiente e sessão administrativa.
 
 ### Atualizar horários/comunidades
 
@@ -169,7 +272,19 @@ Arquivos:
 
 O site está em produção em https://paroquiasantateresinha.com.
 
-Por ser estático, pode ser publicado em qualquer hospedagem de arquivos estáticos (cPanel, Netlify, Vercel static, GitHub Pages, servidor próprio etc.), mantendo a estrutura de pastas (`components/`, `imgs/`) e os caminhos relativos.
+O deploy principal é feito na Vercel. O projeto depende de Vercel Functions e Turso DB para o painel administrativo e para a página dinâmica de avisos.
+
+Variáveis de ambiente exigidas na Vercel:
+
+```env
+TURSO_DATABASE_URL=libsql://...
+TURSO_AUTH_TOKEN=...
+ADMIN_PASSWORD=...
+ADMIN_SESSION_SECRET=...
+ADMIN_SESSION_DAYS=90
+```
+
+Depois de configurar ou alterar variáveis de ambiente, faça um redeploy do projeto na Vercel.
 
 Checklist rápido antes de publicar:
 
@@ -178,6 +293,8 @@ Checklist rápido antes de publicar:
 - Testar menu mobile
 - Testar modal PIX
 - Verificar caminhos das imagens
+- Testar login em `/admin`
+- Criar um aviso de teste e confirmar exibição em `/avisos`
 
 ---
 
@@ -185,5 +302,6 @@ Checklist rápido antes de publicar:
 
 - Centralizar dados de contato/PIX em único arquivo para evitar duplicação
 - Padronizar caminhos de imagens (algumas páginas usam `../imgs/...` e outras `imgs/...`)
-- Adicionar versionamento de conteúdo dos avisos
-- Incluir pipeline simples de deploy automático
+- Adicionar opção de ativar/desativar avisos sem excluir
+- Adicionar upload de imagem para avisos
+- Adicionar auditoria simples de alterações administrativas
