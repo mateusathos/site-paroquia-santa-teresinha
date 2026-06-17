@@ -11,6 +11,7 @@ const elements = {
   loginButton: document.getElementById("login-button"),
   loginError: document.getElementById("login-error"),
   password: document.getElementById("admin-password"),
+  togglePasswordButton: document.getElementById("toggle-password-button"),
   newAvisoButton: document.getElementById("new-aviso-button"),
   logoutButton: document.getElementById("logout-button"),
   adminCount: document.getElementById("admin-count"),
@@ -229,6 +230,16 @@ elements.logoutButton.addEventListener("click", async () => {
   resetForm();
   state.avisos = [];
   showView("login");
+  elements.password.focus();
+});
+
+elements.togglePasswordButton.addEventListener("click", () => {
+  const shouldShowPassword = elements.password.type === "password";
+
+  elements.password.type = shouldShowPassword ? "text" : "password";
+  elements.togglePasswordButton.textContent = shouldShowPassword ? "Ocultar" : "Mostrar";
+  elements.togglePasswordButton.setAttribute("aria-label", shouldShowPassword ? "Ocultar senha" : "Mostrar senha");
+  elements.togglePasswordButton.setAttribute("aria-pressed", String(shouldShowPassword));
   elements.password.focus();
 });
 
