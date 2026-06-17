@@ -1,0 +1,12 @@
+{
+  "name": "igreja-santa-teresinha",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx vercel dev",
+    "start": "npx vercel dev"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15"
+  }
+}
